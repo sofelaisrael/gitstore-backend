@@ -26,6 +26,6 @@ router.get('/rate-limit', async (req, res) => {
   try { res.json((await supabase.from('rate_limit_state').select('*').eq('id', 1).single()).data); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 router.get('/indexed-count', async (req, res) => {
-  try { res.json({ count: (await supabase.from('repos').select('*', { count: 'exact', head: true })).count }); } catch (e) { res.status(500).json({ error: e.message }); }
+  try { res.json({ count: (await supabase.from('repos').select('*', { count: 'exact', head: true }).eq('is_listed', true)).count }); } catch (e) { res.status(500).json({ error: e.message }); }
 });
 export default router;

@@ -77,6 +77,13 @@ class GitHubService {
           stargazerCount
           forkCount
           openIssues: issues(states: OPEN) { totalCount }
+          respondedIssues: issues(first: 1, filterBy: { states: [OPEN, CLOSED] }) {
+            nodes {
+              comments(first: 1) {
+                totalCount
+              }
+            }
+          }
           watchers { totalCount }
           primaryLanguage { name }
           licenseInfo { spdxId }
@@ -123,6 +130,7 @@ class GitHubService {
               isPrerelease
               releaseAssets(first: 30) {
                 nodes {
+                databaseId
                   name
                   size
                   downloadUrl
@@ -259,6 +267,45 @@ class GitHubService {
     } catch (error) {
       return 0;
     }
+  }
+
+  static async getMonthlyActivity(owner, name) {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const query = `
+      query GetMonthlyActivity($owner: String!, $name: String!, $since: DateTime!) {
+        rateLimit { remaining resetAt }
+        repository(owner: $owner, name: $name) {
+          commits: defaultBranchRef {
+            target {
+              ... on Commit {
+                history(since: $since) {
+                  totalCount
+                }
+              }
+            }
+          }
+          issues(states: CLOSED, filterBy: { since: $since }) {
+            totalCount
+          }
+          pullRequests(states: MERGED) {
+            nodes {
+              mergedAt
+            }
+          }
+        }
+      }
+    `;
+    const data = await this.makeRequest(query, { owner, name, since: thirtyDaysAgo });
+    const repo = data.repository;
+
+    // Filter PRs by mergedAt manually as GraphQL doesn't support 'mergedSince' filter directly
+    const mergedPRsCount = repo.pullRequests.nodes.filter(pr => new Date(pr.mergedAt) > new Date(thirtyDaysAgo)).length;
+
+    return {
+      commits: repo.commits?.target?.history?.totalCount || 0,
+      issuesClosed: repo.issues.totalCount || 0,
+      prsMerged: mergedPRsCount
+    };
   }
 }
 

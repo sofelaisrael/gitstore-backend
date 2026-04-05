@@ -1,12 +1,13 @@
 import express from 'express';
 import crypto from 'crypto';
 import supabase from '../services/supabaseService.js';
+import { formatRepo } from '../utils/formatRepo.js';
 const router = express.Router();
 router.get('/:owner/:name', async (req, res) => {
   try {
     const { data } = await supabase.from('repos').select('*, detection_signals(*), trust_scores(*), trending_scores(*), icon_cache(*)').eq('full_name', `${req.params.owner}/${req.params.name}`).single();
     if (!data) return res.status(404).json({ error: 'Repository not found' });
-    res.json(data);
+    res.json(formatRepo(data));
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 router.get('/:owner/:name/readme', async (req, res) => {

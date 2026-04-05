@@ -13,7 +13,7 @@ const FRAMEWORK_CHECKS = [
   {
     name: 'tauri',
     score: 40,
-    check: (files) => files.find(f => f.path.includes('src-tauri/tauri.conf.json'))
+    check: (files) => files.find(f => f.path && f.path.endsWith('src-tauri/tauri.conf.json'))
   },
   {
     name: 'flutter',

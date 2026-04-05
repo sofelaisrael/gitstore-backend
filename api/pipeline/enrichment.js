@@ -31,7 +31,8 @@ export async function enrichRepo(fullName) {
 
     const contributorCount = await GitHubService.getContributorCount(owner, name);
     repo.contributorCount = contributorCount;
-    repo.issueResponseRate = 1;
+    // Simple heuristic: if any issue has at least one comment, it's considered responded
+    repo.issueResponseRate = repo.respondedIssues?.nodes?.[0]?.comments?.totalCount > 0 ? 1 : 0;
 
     const { data: history } = await supabase.from('repo_history').select('*').eq('repo_id', repo.databaseId).order('recorded_date', { ascending: false }).limit(2);
     const trust = calculateTrust(repo, history || []);
@@ -48,7 +49,7 @@ export async function enrichRepo(fullName) {
       stars: repo.stargazerCount, forks: repo.forkCount, open_issues: repo.openIssues.totalCount,
       watchers: repo.watchers.totalCount, license_spdx: repo.licenseInfo?.spdxId || 'Unknown',
       homepage: repo.homepageUrl, topics: topics, default_branch: repo.defaultBranchRef?.name || 'main',
-      is_archived: repo.is_archived, is_fork: repo.isFork, owner_type: repo.owner.__typename,
+      is_archived: !!repo.isArchived, is_fork: !!repo.isFork, owner_type: repo.owner.__typename,
       owner_created_at: repo.owner.createdAt, owner_repo_count: repo.owner.repositories.totalCount,
       created_at: repo.createdAt, last_pushed_at: repo.pushedAt,
       last_commit_at: repo.defaultBranchRef?.target?.committedDate, contributor_count: contributorCount,
