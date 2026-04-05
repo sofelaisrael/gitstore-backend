@@ -227,7 +227,8 @@ class GitHubService {
               name
               owner {
                 login
-                createdAt
+                ... on User { createdAt }
+                ... on Organization { createdAt }
               }
               description
               stargazerCount

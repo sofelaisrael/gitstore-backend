@@ -1,0 +1,35 @@
+--- OPENHUB STORE BACKEND VERIFICATION ---
+Timestamp: 2026-04-05T23:47:31.198Z
+------------------------------------------
+
+[1/4] Testing /api/search with query "obs-studio"...
+OpenHub Backend listening on port 3001
+Status: 200
+Found: 43 repositories
+First Repo Sample (Contract Check): {
+  id: 'number',
+  fullName: 'obsproject/obs-websocket',
+  stars: 'number',
+  iconUrl: true
+}
+------------------------------------------
+
+[2/4] Testing /api/store/featured...
+Status: 200
+Featured App: yt-dlc
+Trending Count: 4
+Recent Count: 4
+Stats: { total_listed: 0, category_breakdown: {} }
+------------------------------------------
+
+[3/4] Testing /api/admin/indexed-count with secret...
+Status: 200
+Body: { count: 4 }
+------------------------------------------
+
+[4/4] Testing /api/store/stats...
+Status: 200
+Body: { total_indexed: 0, category_breakdown: {} }
+------------------------------------------
+
+Verification Complete.
